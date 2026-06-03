@@ -1,11 +1,15 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 
-import DashboardScreen from '../screens/DashboardScreen';
-import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
+import DashboardScreen from "../screens/DashboardScreen";
+import { colors } from "../theme/colors";
+import { typography } from "../theme/typography";
+import { ItemType } from "../utils/types";
+import MedicationScreen from "../screens/MedsScreen";
+import ExamsScreen from "../screens/ExamsScreen";
+import AppointmentScreen from "../screens/AppointmentScreen";
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
@@ -13,11 +17,12 @@ export type MainTabParamList = {
   Home: undefined;
   Meds: undefined;
   Exams: undefined;
-  Profile: undefined;
+  Appointments: undefined;
 };
 
 interface PlaceholderScreenProps {
   title: string;
+  mode?: ItemType;
 }
 
 const tabIcons: Record<
@@ -28,45 +33,35 @@ const tabIcons: Record<
   }
 > = {
   Home: {
-    active: 'home',
-    inactive: 'home-outline',
+    active: "home",
+    inactive: "home-outline",
   },
   Meds: {
-    active: 'medkit',
-    inactive: 'medkit-outline',
+    active: "medkit",
+    inactive: "medkit-outline",
   },
   Exams: {
-    active: 'calendar',
-    inactive: 'calendar-outline',
+    active: "calendar",
+    inactive: "calendar-outline",
   },
-  Profile: {
-    active: 'person',
-    inactive: 'person-outline',
+  Appointments: {
+    active: "calendar",
+    inactive: "calendar-outline",
   },
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const PlaceholderScreen: React.FC<PlaceholderScreenProps> = ({ title }) => {
+const PlaceholderScreen: React.FC<PlaceholderScreenProps> = ({
+  title,
+  mode,
+}) => {
   return (
     <View style={styles.placeholderContainer}>
       <Text style={styles.placeholderText}>{title}</Text>
     </View>
   );
 };
-
-const MedsScreen: React.FC = () => {
-  return <PlaceholderScreen title="Em breve" />;
-};
-
-const ExamsScreen: React.FC = () => {
-  return <PlaceholderScreen title="Em breve" />;
-};
-
-const ProfileScreen: React.FC = () => {
-  return <PlaceholderScreen title="Em breve" />;
-};
-
 const TabNavigator: React.FC = () => {
   return (
     <Tab.Navigator
@@ -88,11 +83,23 @@ const TabNavigator: React.FC = () => {
       <Tab.Screen
         name="Home"
         component={DashboardScreen}
-        options={{ title: 'Início' }}
+        options={{ title: "Início" }}
       />
-      <Tab.Screen name="Meds" component={MedsScreen} options={{ title: 'Remédios' }} />
-      <Tab.Screen name="Exams" component={ExamsScreen} options={{ title: 'Exames' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil' }} />
+      <Tab.Screen
+        name="Meds"
+        component={MedicationScreen}
+        options={{ title: "Remédios" }}
+      />
+      <Tab.Screen
+        name="Exams"
+        component={ExamsScreen}
+        options={{ title: "Exames" }}
+      />
+      <Tab.Screen
+        name="Appointments"
+        component={AppointmentScreen}
+        options={{ title: "Consultas" }}
+      />
     </Tab.Navigator>
   );
 };
@@ -110,8 +117,8 @@ const styles = StyleSheet.create({
   },
   placeholderContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: colors.background,
   },
   placeholderText: {

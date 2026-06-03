@@ -39,10 +39,7 @@ export async function createExam(
 }
 
 export async function listExams(userId: string): Promise<Exam[]> {
-  const snapshot = await examsCollection
-    .where("userId", "==", userId)
-    .orderBy("createdAt", "desc")
-    .get();
+  const snapshot = await examsCollection.where("userId", "==", userId).get();
 
   return snapshot.docs.map(validateExam);
 }

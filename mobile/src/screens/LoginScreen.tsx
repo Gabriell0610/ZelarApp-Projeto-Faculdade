@@ -48,9 +48,6 @@ const LoginScreen: React.FC = () => {
 
       await saveToken(token);
 
-      const tokenSaved = await getToken();
-      console.log(tokenSaved);
-
       navigation.navigate("Main");
     } catch (error: any) {
       console.log("erro login", error.response.data);

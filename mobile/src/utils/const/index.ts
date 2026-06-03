@@ -5,3 +5,8 @@ export const LOGIN_URL = `https://identitytoolkit.googleapis.com/v1/accounts:sig
 export const MEDICATION_TODAY = `medications/today`;
 export const EXAMS_TODAY = `exams/today`;
 export const APPOINTMENTS_TODAY = `appointments/today`;
+export const MEDICATION = `medications`;
+export const APPOINTMENTS = `appointments`;
+export const EXAMS = `exams`;
+
+export const USER = `users/me`;

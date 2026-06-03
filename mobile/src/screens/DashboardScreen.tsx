@@ -4,17 +4,28 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import SectionHeader from "../components/dashboard/SectionHeader";
 import StatCard from "../components/dashboard/StatCard";
-import TodayItem, { TodayItemProps } from "../components/dashboard/TodayItem";
+import TodayItem, {
+  AppointmentItemProps,
+  ExamItemProps,
+  MedicationItemProps,
+  TodayItemProps,
+} from "../components/dashboard/TodayItem";
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
 import { Ionicons } from "@expo/vector-icons";
-import axios from "axios";
 import {
   APPOINTMENTS_TODAY,
   EXAMS_TODAY,
   MEDICATION_TODAY,
+  USER,
 } from "../utils/const";
 import { fetchApi } from "../service/api";
+import {
+  ListAppointmentInterface,
+  ListExamsInterface,
+  ListMedicationInterface,
+  ListUserInterface,
+} from "../utils/types";
 
 interface StatSummary {
   value: number;
@@ -23,150 +34,119 @@ interface StatSummary {
   textColor: string;
 }
 
-interface ListMedicationInterface {
-  id: string;
-  scheduleTimes: string[];
-  startDate: string;
-  endDate: string;
-  frequency: string;
-  notes: string;
-  userId: string;
-  dosage: string;
-  name: string;
-}
-interface ListExamsInterface {
-  id: string;
-  address: string;
-  notes: string;
-  date: string;
-  name: string;
-  userId: string;
-  time: string;
-  preparation: string;
-}
-
-interface ListAppointmentInterface {
-  id: string;
-  userId: string;
-  doctorName: string;
-  date: string;
-  notes: string;
-  time: string;
-  updatedAt: string;
-  specialty: string;
-  address: string;
-  createdAt: string;
-}
-
 const capitalizeFirstLetter = (value: string): string => {
   return value.charAt(0).toUpperCase() + value.slice(1);
 };
 
 const DashboardScreen: React.FC = () => {
-  const [userName] = useState<string>("João Silva");
+  const [medicationsToday, setMedicationsToday] = useState<
+    MedicationItemProps[]
+  >([]);
+
+  const [appointmentsToday, setAppointmentsToday] = useState<
+    AppointmentItemProps[]
+  >([]);
+
+  const [examsToday, setExamsToday] = useState<ExamItemProps[]>([]);
+  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
     async function loadData() {
       try {
         const medications =
-          await fetchApi.get<ListMedicationInterface>(MEDICATION_TODAY);
+          await fetchApi.get<ListMedicationInterface[]>(MEDICATION_TODAY);
 
         const appointments =
-          await fetchApi.get<ListAppointmentInterface>(APPOINTMENTS_TODAY);
+          await fetchApi.get<ListAppointmentInterface[]>(APPOINTMENTS_TODAY);
 
-        const exams = await fetchApi.get<ListExamsInterface>(EXAMS_TODAY);
+        const exams = await fetchApi.get<ListExamsInterface[]>(EXAMS_TODAY);
 
-        console.log("Medication: ", medications.data);
-        console.log("consultas: ", appointments.data);
-        console.log("exames: ", exams.data);
+        setMedicationsToday(
+          medications.data.map((item) => ({
+            mode: "Medication",
+
+            id: item.id,
+            name: item.name,
+            dosage: item.dosage,
+            frequency: item.frequency,
+            scheduleTimes: item.scheduleTimes,
+
+            dotColor: "#1D9E75",
+            timeBackgroundColor: "#E1F5EE",
+            timeTextColor: "#085041",
+          })),
+        );
+
+        setAppointmentsToday(
+          appointments.data.map((item) => ({
+            mode: "Appointment",
+
+            id: item.id,
+            time: item.time,
+            specialty: item.specialty,
+            doctorName: item.doctorName,
+            address: item.address,
+            notes: item.notes,
+
+            dotColor: "#CB1958",
+            timeBackgroundColor: "#FCE4EC",
+            timeTextColor: "#CB1958",
+          })),
+        );
+
+        setExamsToday(
+          exams.data.map((item) => ({
+            mode: "Exam",
+
+            id: item.id,
+            date: item.date,
+            name: item.name,
+            address: item.address,
+            preparation: item.preparation,
+
+            dotColor: "#534AB7",
+            timeBackgroundColor: "#EEEDFE",
+            timeTextColor: "#3C3489",
+          })),
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function loadUser() {
+      try {
+        const res = await fetchApi.get<ListUserInterface>(USER);
+        setUserName(res.data.name);
       } catch (error) {
         console.error(error);
       }
     }
 
     loadData();
+    loadUser();
   }, []);
 
-  const [stats] = useState<StatSummary[]>([
+  const stats: StatSummary[] = [
     {
-      value: 3,
+      value: medicationsToday.length,
       label: "Remédios hoje",
       backgroundColor: "#E1F5EE",
       textColor: "#085041",
     },
     {
-      value: 1,
+      value: examsToday.length,
       label: "Exame hoje",
       backgroundColor: "#EEEDFE",
       textColor: "#3C3489",
     },
     {
-      value: 2,
+      value: appointmentsToday.length,
       label: "Consultas hoje",
       backgroundColor: "#FAEEDA",
       textColor: "#633806",
     },
-  ]);
-
-  const [medicationsToday, setMedicationsToday] = useState<TodayItemProps[]>([
-    {
-      time: "08:00",
-      title: "Losartana 50mg",
-      subtitle: "1 comprimido",
-      dotColor: colors.primary,
-      timeBackgroundColor: "#E1F5EE",
-      timeTextColor: "#085041",
-    },
-    {
-      time: "12:00",
-      title: "Metformina 850mg",
-      subtitle: "1 comprimido",
-      dotColor: "#EF9F27",
-      timeBackgroundColor: "#FFF4E6",
-      timeTextColor: "#633806",
-    },
-    {
-      time: "15:00",
-      title: "Consulta cardiologista",
-      subtitle: "Dr. Marcos — Clínica Vida",
-      dotColor: "#534AB7",
-      timeBackgroundColor: "#EEEDFE",
-      timeTextColor: "#3C3489",
-    },
-  ]);
-
-  const [examItems, setItems] = useState<TodayItemProps[]>([
-    {
-      time: "28 Mai",
-      title: "Hemograma completo",
-      subtitle: "Lab. São Lucas",
-      dotColor: "#534AB7",
-      timeBackgroundColor: "#EEEDFE",
-      timeTextColor: "#3C3489",
-    },
-    {
-      time: "03 Jun",
-      title: "Ecocardiograma",
-      subtitle: "Clínica do Coração",
-      dotColor: "#534AB7",
-      timeBackgroundColor: "#EEEDFE",
-      timeTextColor: "#3C3489",
-    },
-  ]);
-
-  const [appointment, setAppointment] = useState<TodayItemProps[]>([
-    {
-      time: "28 Mai",
-      title: "Hemograma completo",
-      address: "Rua leite ribeiro - 23",
-      doctorName: "Ricardo",
-      notes: "levar exame de sangue",
-      specialty: "Endrocrino",
-      dotColor: "#cb1958",
-      timeBackgroundColor: "#EEEDFE",
-      timeTextColor: "#cb1958",
-    },
-  ]);
+  ];
 
   const currentDate = useMemo(() => {
     const formattedDate = new Date().toLocaleDateString("pt-BR", {
@@ -217,15 +197,7 @@ const DashboardScreen: React.FC = () => {
           <SectionHeader title="Remédios" />
           <View style={styles.itemList}>
             {medicationsToday.map((item) => (
-              <TodayItem
-                key={`${item.time}-${item.title}`}
-                time={item.time}
-                title={item.title}
-                subtitle={item.subtitle}
-                dotColor={item.dotColor}
-                timeBackgroundColor={item.timeBackgroundColor}
-                timeTextColor={item.timeTextColor}
-              />
+              <TodayItem key={item.name} {...item} />
             ))}
           </View>
 
@@ -235,16 +207,8 @@ const DashboardScreen: React.FC = () => {
             onActionPress={handleSeeAllExams}
           />
           <View style={styles.itemList}>
-            {examItems.map((item) => (
-              <TodayItem
-                key={`${item.time}-${item.title}`}
-                time={item.time}
-                title={item.title}
-                subtitle={item.subtitle}
-                dotColor={item.dotColor}
-                timeBackgroundColor={item.timeBackgroundColor}
-                timeTextColor={item.timeTextColor}
-              />
+            {appointmentsToday.map((item) => (
+              <TodayItem key={`${item.time}-${item.doctorName}`} {...item} />
             ))}
           </View>
 
@@ -254,20 +218,8 @@ const DashboardScreen: React.FC = () => {
             onActionPress={handleSeeAllExams}
           />
           <View style={styles.itemList}>
-            {appointment.map((item) => (
-              <TodayItem
-                key={`${item.time}-${item.title}`}
-                mode="Appointment"
-                time={item.time}
-                title={item.title}
-                doctorName={item.doctorName}
-                notes={item.notes}
-                specialty={item.specialty}
-                address={item.address}
-                dotColor={item.dotColor}
-                timeBackgroundColor={item.timeBackgroundColor}
-                timeTextColor={item.timeTextColor}
-              />
+            {examsToday.map((item) => (
+              <TodayItem key={`${item.id}-${item.name}`} {...item} />
             ))}
           </View>
         </View>

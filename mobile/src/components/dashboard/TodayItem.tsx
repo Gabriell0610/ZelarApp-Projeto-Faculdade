@@ -3,88 +3,152 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
+import { ItemType } from "../../utils/types";
 
-type ItemType = "Appointment" | "Medications";
-interface TodayItemPropsBase {
+interface BaseTodayItemProps {
+  mode: ItemType;
+
   dotColor: string;
   timeBackgroundColor: string;
   timeTextColor: string;
-  mode?: ItemType;
 }
 
-export interface TodayItemProps extends TodayItemPropsBase {
-  time?: string;
-  title?: string;
-  subtitle?: string;
-  address?: string;
-  notes?: string;
-  specialty?: string;
-  doctorName?: string;
-  name?: string;
-  dosage?: string;
-  frequency?: string;
-  scheduleTimes?: string[];
+export interface ExamItemProps extends BaseTodayItemProps {
+  mode: "Exam";
+
+  id: string;
+  date: string;
+  name: string;
+  address: string;
+  preparation: string;
 }
 
-const TodayItem: React.FC<TodayItemProps> = ({
-  time,
-  title,
-  subtitle,
-  dotColor,
-  timeBackgroundColor,
-  timeTextColor,
-  mode,
-  doctorName,
-  address,
-  notes,
-  specialty,
-}) => {
+export interface AppointmentItemProps extends BaseTodayItemProps {
+  mode: "Appointment";
+
+  id: string;
+  time: string;
+  specialty: string;
+  doctorName: string;
+  address: string;
+  notes: string;
+}
+
+export interface MedicationItemProps extends BaseTodayItemProps {
+  mode: "Medication";
+
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  scheduleTimes: string[];
+}
+
+export type TodayItemProps =
+  | AppointmentItemProps
+  | ExamItemProps
+  | MedicationItemProps;
+
+const TodayItem: React.FC<TodayItemProps> = (props) => {
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
         timeBadge: {
-          backgroundColor: timeBackgroundColor,
+          backgroundColor: props.timeBackgroundColor,
         },
         timeText: {
-          color: timeTextColor,
+          color: props.timeTextColor,
         },
         dot: {
-          backgroundColor: dotColor,
+          backgroundColor: props.dotColor,
         },
       }),
-    [dotColor, timeBackgroundColor, timeTextColor],
+    [props],
   );
 
-  return mode === "Appointment" ? (
+  return (
     <View style={styles.container}>
-      <View style={[styles.timeBadge, dynamicStyles.timeBadge]}>
-        <Text style={[styles.timeText, dynamicStyles.timeText]}>{time}</Text>
-      </View>
+      {renderTimeBadge(props, dynamicStyles)}
 
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{`Endereço: ${address}`}</Text>
-        <Text style={styles.subtitle}>{`Doutor: ${doctorName}`}</Text>
-        <Text style={styles.subtitle}>{`Lembrete: ${notes}`}</Text>
-      </View>
-
-      <View style={[styles.dot, dynamicStyles.dot]} />
-    </View>
-  ) : (
-    <View style={styles.container}>
-      <View style={[styles.timeBadge, dynamicStyles.timeBadge]}>
-        <Text style={[styles.timeText, dynamicStyles.timeText]}>{time}</Text>
-      </View>
-
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
-      </View>
+      <View style={styles.textContainer}>{renderContent(props)}</View>
 
       <View style={[styles.dot, dynamicStyles.dot]} />
     </View>
   );
 };
+
+function renderTimeBadge(props: TodayItemProps, dynamicStyles: any) {
+  if (props.mode === "Appointment") {
+    return (
+      <View style={[styles.timeBadge, dynamicStyles.timeBadge]}>
+        <Text style={[styles.timeText, dynamicStyles.timeText]}>
+          {props.time}
+        </Text>
+      </View>
+    );
+  }
+
+  if (props.mode === "Exam") {
+    return (
+      <View style={[styles.timeBadge, dynamicStyles.timeBadge]}>
+        <Text style={[styles.timeText, dynamicStyles.timeText]}>
+          {props.date}
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.timeBadge, dynamicStyles.timeBadge]}>
+      <Text style={[styles.timeText, dynamicStyles.timeText]}>
+        {props.scheduleTimes[0]}
+      </Text>
+    </View>
+  );
+}
+
+function renderContent(props: TodayItemProps) {
+  switch (props.mode) {
+    case "Appointment":
+      return (
+        <>
+          <Text style={styles.title}>{props.specialty}</Text>
+
+          <Text style={styles.subtitle}>Doutor: {props.doctorName}</Text>
+
+          <Text style={styles.subtitle}>Endereço: {props.address}</Text>
+
+          <Text style={styles.subtitle}>Lembrete: {props.notes}</Text>
+        </>
+      );
+
+    case "Exam":
+      return (
+        <>
+          <Text style={styles.title}>{props.name}</Text>
+
+          <Text style={styles.subtitle}>Endereço: {props.address}</Text>
+
+          <Text style={styles.subtitle}>Preparo: {props.preparation}</Text>
+        </>
+      );
+
+    case "Medication":
+      return (
+        <>
+          <Text style={styles.title}>{props.name}</Text>
+
+          <Text style={styles.subtitle}>Dosagem: {props.dosage}</Text>
+
+          <Text style={styles.subtitle}>Frequência: {props.frequency}</Text>
+
+          <Text style={styles.subtitle}>
+            Horários: {props.scheduleTimes.join(", ")}
+          </Text>
+        </>
+      );
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
