@@ -7,7 +7,7 @@
 ## Aluno
 
 **Gabriel Barbosa**
-**Matrícula:** 20230
+**Matrícula:** 202302400541
 **Curso:** Sistemas de Informação — 7º Semestre
 
 ---
