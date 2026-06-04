@@ -8,7 +8,7 @@ import ItemCard from "../components/shared/ItemCard";
 import BottomSheet from "../components/shared/BottomSheet";
 import EmptyList from "../components/shared/EmptyList";
 import ExamForm, { ExamFormData } from "../components/forms/ExamForm";
-import { fetchApi } from "../service/api";
+import { fetchApi, useFetchApi } from "../service/api";
 import { EXAMS } from "../utils/const";
 
 export interface ListExamsInterface {
@@ -40,13 +40,9 @@ const ExamsScreen: React.FC = () => {
   }, []);
 
   const handleSubmit = async (data: ExamFormData) => {
-    try {
-      const response = await fetchApi.post<ListExamsInterface>(EXAMS, data);
-      setExams((prev) => [response.data, ...prev]);
-      setBottomSheetVisible(false);
-    } catch (error) {
-      console.error(error);
-    }
+    const response = await useFetchApi<ExamFormData>(EXAMS, data);
+    setExams((prev) => [response.data, ...prev]);
+    setBottomSheetVisible(false);
   };
 
   return (

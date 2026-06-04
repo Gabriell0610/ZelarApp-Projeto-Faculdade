@@ -11,7 +11,7 @@ import MedicationForm, {
   MedicationFormData,
 } from "../components/forms/MedicationForm";
 import { MEDICATION } from "../utils/const";
-import { fetchApi } from "../service/api";
+import { fetchApi, useFetchApi } from "../service/api";
 
 export interface ListMedicationInterface {
   id: string;
@@ -42,13 +42,9 @@ const MedicationScreen: React.FC = () => {
   }, []);
 
   const handleSubmit = async (data: MedicationFormData) => {
-    try {
-      const response = await fetchApi.post(MEDICATION, data);
-      setMedications((prev) => [response.data, ...prev]);
-      setBottomSheetVisible(false);
-    } catch (error) {
-      console.error(error);
-    }
+    const response = await useFetchApi<MedicationFormData>(MEDICATION, data);
+    setMedications((prev) => [response.data, ...prev]);
+    setBottomSheetVisible(false);
   };
 
   return (

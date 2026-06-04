@@ -11,7 +11,7 @@ import AppointmentForm, {
   AppointmentFormData,
 } from "../components/forms/AppointmentForm";
 import { APPOINTMENTS } from "../utils/const";
-import { fetchApi } from "../service/api";
+import { fetchApi, useFetchApi } from "../service/api";
 
 export interface ListAppointmentInterface {
   id: string;
@@ -45,16 +45,9 @@ const AppointmentScreen: React.FC = () => {
   }, []);
 
   const handleSubmit = async (data: AppointmentFormData) => {
-    try {
-      const response = await fetchApi.post<ListAppointmentInterface>(
-        APPOINTMENTS,
-        data,
-      );
-      setAppointments((prev) => [response.data, ...prev]);
-      setBottomSheetVisible(false);
-    } catch (error) {
-      console.error(error);
-    }
+    const response = await useFetchApi<AppointmentFormData>(APPOINTMENTS, data);
+    setAppointments((prev) => [response.data, ...prev]);
+    setBottomSheetVisible(false);
   };
 
   return (
