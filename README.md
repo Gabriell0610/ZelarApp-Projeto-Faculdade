@@ -334,13 +334,9 @@ Observação:
 ## Executar o Frontend
 
 ```bash
+npm run start OU
+npx expo start --clear OU
 npx expo start --lan
-```
-
-ou
-
-```bash
-npx expo start --clear
 ```
 
 Abra o aplicativo utilizando:
