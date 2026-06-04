@@ -18,6 +18,7 @@ export interface ExamItemProps extends BaseTodayItemProps {
 
   id: string;
   date: string;
+  time: string;
   name: string;
   address: string;
   preparation: string;
@@ -92,7 +93,7 @@ function renderTimeBadge(props: TodayItemProps, dynamicStyles: any) {
     return (
       <View style={[styles.timeBadge, dynamicStyles.timeBadge]}>
         <Text style={[styles.timeText, dynamicStyles.timeText]}>
-          {props.date}
+          {props.time}
         </Text>
       </View>
     );

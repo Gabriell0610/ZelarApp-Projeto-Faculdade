@@ -29,11 +29,18 @@ const MedicationForm: React.FC<MedicationFormProps> = ({ onSubmit }) => {
   const handleSubmit = () => {
     if (!name || !dosage || !frequency || !scheduleTimes || !startDate) return;
 
+    const times = scheduleTimes
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+
+    console.log("scheduleTimes enviado:", JSON.stringify(times));
+
     onSubmit({
       name,
       dosage,
       frequency,
-      scheduleTimes: scheduleTimes.split(",").map((t) => t.trim()),
+      scheduleTimes: times,
       startDate,
       endDate: endDate || undefined,
       notes: notes || undefined,
@@ -69,10 +76,11 @@ const MedicationForm: React.FC<MedicationFormProps> = ({ onSubmit }) => {
         placeholder="ex: 2x ao dia"
       />
       <Input
-        label="Horários"
+        label="Horários (separe por vírgula)"
         value={scheduleTimes}
         onChangeText={setScheduleTimes}
-        placeholder="ex: 08:00, 20:00"
+        placeholder="08:00, 20:00"
+        autoCapitalize="none"
       />
       <Input
         label="Data de início"

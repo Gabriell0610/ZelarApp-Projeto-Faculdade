@@ -43,10 +43,7 @@ const MedicationScreen: React.FC = () => {
 
   const handleSubmit = async (data: MedicationFormData) => {
     try {
-      const response = await fetchApi.post<ListMedicationInterface>(
-        MEDICATION,
-        data,
-      );
+      const response = await fetchApi.post(MEDICATION, data);
       setMedications((prev) => [response.data, ...prev]);
       setBottomSheetVisible(false);
     } catch (error) {

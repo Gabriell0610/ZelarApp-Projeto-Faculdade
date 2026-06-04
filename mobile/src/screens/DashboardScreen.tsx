@@ -1,6 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 
 import SectionHeader from "../components/dashboard/SectionHeader";
 import StatCard from "../components/dashboard/StatCard";
@@ -39,6 +47,7 @@ const capitalizeFirstLetter = (value: string): string => {
 };
 
 const DashboardScreen: React.FC = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const [medicationsToday, setMedicationsToday] = useState<
     MedicationItemProps[]
   >([]);
@@ -50,82 +59,89 @@ const DashboardScreen: React.FC = () => {
   const [examsToday, setExamsToday] = useState<ExamItemProps[]>([]);
   const [userName, setUserName] = useState<string>("");
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const medications =
-          await fetchApi.get<ListMedicationInterface[]>(MEDICATION_TODAY);
+  const loadData = useCallback(async () => {
+    try {
+      const medications =
+        await fetchApi.get<ListMedicationInterface[]>(MEDICATION_TODAY);
+      const appointments =
+        await fetchApi.get<ListAppointmentInterface[]>(APPOINTMENTS_TODAY);
+      const exams = await fetchApi.get<ListExamsInterface[]>(EXAMS_TODAY);
 
-        const appointments =
-          await fetchApi.get<ListAppointmentInterface[]>(APPOINTMENTS_TODAY);
+      setMedicationsToday(
+        medications.data.map((item) => ({
+          mode: "Medication",
+          id: item.id,
+          name: item.name,
+          dosage: item.dosage,
+          frequency: item.frequency,
+          scheduleTimes: item.scheduleTimes,
+          dotColor: "#1D9E75",
+          timeBackgroundColor: "#E1F5EE",
+          timeTextColor: "#085041",
+        })),
+      );
 
-        const exams = await fetchApi.get<ListExamsInterface[]>(EXAMS_TODAY);
+      setAppointmentsToday(
+        appointments.data.map((item) => ({
+          mode: "Appointment",
+          id: item.id,
+          time: item.time,
+          specialty: item.specialty,
+          doctorName: item.doctorName,
+          address: item.address,
+          notes: item.notes,
+          dotColor: "#CB1958",
+          timeBackgroundColor: "#FCE4EC",
+          timeTextColor: "#CB1958",
+        })),
+      );
 
-        setMedicationsToday(
-          medications.data.map((item) => ({
-            mode: "Medication",
+      setExamsToday(
+        exams.data.map((item) => ({
+          mode: "Exam",
+          id: item.id,
+          date: item.date,
+          name: item.name,
+          time: item.time,
+          address: item.address,
+          preparation: item.preparation,
+          dotColor: "#534AB7",
+          timeBackgroundColor: "#EEEDFE",
+          timeTextColor: "#3C3489",
+        })),
+      );
 
-            id: item.id,
-            name: item.name,
-            dosage: item.dosage,
-            frequency: item.frequency,
-            scheduleTimes: item.scheduleTimes,
-
-            dotColor: "#1D9E75",
-            timeBackgroundColor: "#E1F5EE",
-            timeTextColor: "#085041",
-          })),
-        );
-
-        setAppointmentsToday(
-          appointments.data.map((item) => ({
-            mode: "Appointment",
-
-            id: item.id,
-            time: item.time,
-            specialty: item.specialty,
-            doctorName: item.doctorName,
-            address: item.address,
-            notes: item.notes,
-
-            dotColor: "#CB1958",
-            timeBackgroundColor: "#FCE4EC",
-            timeTextColor: "#CB1958",
-          })),
-        );
-
-        setExamsToday(
-          exams.data.map((item) => ({
-            mode: "Exam",
-
-            id: item.id,
-            date: item.date,
-            name: item.name,
-            address: item.address,
-            preparation: item.preparation,
-
-            dotColor: "#534AB7",
-            timeBackgroundColor: "#EEEDFE",
-            timeTextColor: "#3C3489",
-          })),
-        );
-      } catch (error) {
-        console.error(error);
-      }
+      console.log("exames: ", exams.data);
+      console.log("consultas: ", appointments.data);
+      console.log("medicações: ", medications.data);
+    } catch (error) {
+      console.error(error);
     }
-
-    async function loadUser() {
-      try {
-        const res = await fetchApi.get<ListUserInterface>(USER);
-        setUserName(res.data.name);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    loadData();
-    loadUser();
   }, []);
+
+  const loadUser = useCallback(async () => {
+    try {
+      const res = await fetchApi.get<ListUserInterface>(USER);
+      setUserName(res.data.name);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
+  // recarrega ao focar na tela
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+      loadUser();
+    }, [loadData, loadUser]),
+  );
+
+  // pull to refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([loadData(), loadUser()]);
+    setRefreshing(false);
+  };
 
   const stats: StatSummary[] = [
     {
@@ -158,24 +174,22 @@ const DashboardScreen: React.FC = () => {
     return capitalizeFirstLetter(formattedDate);
   }, []);
 
-  const handleSeeAllExams = (): void => {
-    console.log("Ver todos pressionado");
-  };
-
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
       >
         <View style={styles.header}>
-          <Pressable
-            onPress={() => navigation.navigate("Landing")}
-            style={styles.backButton}
-          >
-            <Ionicons name="chevron-back" size={28} color={colors.primary} />
-          </Pressable>
           <Text style={styles.greeting}>Bom dia,</Text>
           <Text style={styles.userName}>{userName}</Text>
           <Text style={styles.date}>{currentDate}</Text>
@@ -201,25 +215,17 @@ const DashboardScreen: React.FC = () => {
             ))}
           </View>
 
-          <SectionHeader
-            title="Exames"
-            actionLabel="Ver todos"
-            onActionPress={handleSeeAllExams}
-          />
+          <SectionHeader title="Exames" />
           <View style={styles.itemList}>
-            {appointmentsToday.map((item) => (
-              <TodayItem key={`${item.time}-${item.doctorName}`} {...item} />
+            {examsToday.map((item) => (
+              <TodayItem key={`${item.id}`} {...item} />
             ))}
           </View>
 
-          <SectionHeader
-            title="Consultas"
-            actionLabel="Ver todos"
-            onActionPress={handleSeeAllExams}
-          />
+          <SectionHeader title="Consultas" />
           <View style={styles.itemList}>
-            {examsToday.map((item) => (
-              <TodayItem key={`${item.id}-${item.name}`} {...item} />
+            {appointmentsToday.map((item) => (
+              <TodayItem key={`${item.id}`} {...item} />
             ))}
           </View>
         </View>
@@ -240,6 +246,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginTop: 16,
     paddingVertical: 2,
+    color: colors.white,
   },
   contentContainer: {
     paddingBottom: 32,

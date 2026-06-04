@@ -80,6 +80,10 @@ const ExamsScreen: React.FC = () => {
               { label: "Data", value: item.date },
               { label: "Horário", value: item.time },
               { label: "Local", value: item.address },
+              ...(item.notes
+                ? [{ label: "Preparação", value: item.notes }]
+                : []),
+              ...(item.notes ? [{ label: "Lembrete", value: item.notes }] : []),
             ]}
           />
         )}
