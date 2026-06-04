@@ -52,7 +52,6 @@ export async function listExamsToday(userId: string): Promise<Exam[]> {
     .get();
 
   const exams = snapshot.docs.map(validateExam);
-  console.log("passou aqui: ", exams);
 
   return exams.sort((a, b) => a.time.localeCompare(b.time));
 }

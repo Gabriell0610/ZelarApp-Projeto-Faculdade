@@ -4,11 +4,14 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --watch src/infra/server.ts"
+    "dev": "tsx watch src/infra/server.ts",
+    "start": "node dist/infra/server.js",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "^25.9.1"
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.4"
   },
   "peerDependencies": {
     "typescript": "^6.0.3"
