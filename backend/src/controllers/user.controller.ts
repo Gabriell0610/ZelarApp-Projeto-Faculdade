@@ -15,7 +15,7 @@ export async function createUserController(
     throw new AppError("Authenticated user does not have an email", 400);
   }
 
-  console.log("chegou aqui");
+  console.log("chegou aqui", body);
 
   const user = await createUser(request.user.uid, {
     name: body.name,

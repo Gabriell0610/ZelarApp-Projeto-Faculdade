@@ -11,3 +11,4 @@ export const APPOINTMENTS = `appointments`;
 export const EXAMS = `exams`;
 
 export const USER = `users/me`;
+export const REGISTER_USER = `users`;

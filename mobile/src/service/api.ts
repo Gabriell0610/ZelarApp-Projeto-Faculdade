@@ -13,6 +13,10 @@ export const fetchApi = axios.create({
 });
 
 fetchApi.interceptors.request.use(async (config) => {
+  if (config.headers.Authorization) {
+    return config;
+  }
+
   const token = await getToken();
 
   if (token) {

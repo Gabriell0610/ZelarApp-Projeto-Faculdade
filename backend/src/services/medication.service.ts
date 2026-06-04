@@ -46,7 +46,6 @@ export async function listMedications(
 ): Promise<MedicationResponse[]> {
   const snapshot = await medicationsCollection
     .where("userId", "==", userId)
-    .orderBy("createdAt", "desc")
     .get();
   return snapshot.docs.map(validateMedication);
 }
@@ -57,12 +56,12 @@ export async function listMedicationsToday(
   const today = getTodayBrazil();
   const snapshot = await medicationsCollection
     .where("userId", "==", userId)
-    .where("startDate", "<=", today)
-    .where("endDate", ">=", today)
-    .orderBy("endDate", "asc")
     .get();
 
-  return snapshot.docs.map(validateMedication);
+  return snapshot.docs
+    .map(validateMedication)
+    .filter((med) => med.startDate <= today && med.endDate >= today)
+    .sort((a, b) => a.endDate.localeCompare(b.endDate));
 }
 
 export async function updateMedication(

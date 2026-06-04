@@ -18,12 +18,14 @@ import Input from "../components/ui/Input";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
-import { BASE_URL, REGISTER_URL } from "../utils/const";
+import { BASE_URL, REGISTER_URL, REGISTER_USER } from "../utils/const";
 import axios from "axios";
 import {
   LoginAndRegisterRequestInterface,
   RegisterRequestInterface,
 } from "../utils/types";
+import { fetchApi } from "../service/api";
+import { saveToken } from "../storage/auth-storage";
 
 type RegisterScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -45,26 +47,24 @@ const RegisterScreen: React.FC = () => {
           returnSecureToken: true,
         });
 
+      console.log("Criou usuário no Firebase Auth");
       const token = responseFireAuth.data.idToken;
-      const responseRegister = await axios.post<RegisterRequestInterface>(
-        `${BASE_URL}/users`,
-        {
-          name,
-          email,
-          returnSecureToken: true,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      await saveToken(token);
+
+      await fetchApi.post<RegisterRequestInterface>(REGISTER_USER, {
+        name,
+      });
+
+      console.log("Passou da chamada do backend");
 
       navigation.navigate("Login");
     } catch (error: any) {
       console.log("status:", error.response?.status);
       console.log("erro:", JSON.stringify(error.response?.data));
       console.log("mensagem:", error.message);
+      console.log("url chamada:", error.config?.url);
+      console.log("baseURL:", error.config?.baseURL);
+      console.log("headers enviados:", JSON.stringify(error.config?.headers));
     }
   };
 
