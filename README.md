@@ -182,7 +182,7 @@ Selecionar a opção Web
 Defina um nome para o aplicativo:
 
 ```txt
-Front-ZelarApp
+ZelarApp
 ```
 
 Copie o valor da propriedade:
